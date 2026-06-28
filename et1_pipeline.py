@@ -7,7 +7,7 @@ from urllib.parse import quote_plus
 
 #MySQL connection
 DB_USER     = "root"
-DB_PASSWORD = quote_plus("your_password")   # encodes @ safely
+DB_PASSWORD = quote_plus("Your Password")   # encodes @ safely
 DB_HOST     = "localhost"
 DB_PORT     = "3306"
 DB_NAME     = "students_et1"
@@ -102,56 +102,81 @@ def clean(df):
     df['attendance_percentage'] = pd.to_numeric(df['attendance_percentage'], errors='coerce')
     df.loc[~df['attendance_percentage'].between(0, 100), 'attendance_percentage'] = np.nan
 
+    # admission_year: must be realistic
+    df['admission_year'] = pd.to_numeric(df['admission_year'], errors='coerce')
+    df.loc[~df['admission_year'].between(2000, 2025), 'admission_year'] = np.nan
+
     # fee_status: normalize
     fee_map = {
-        'paid': 'Paid', 'p a i d': 'Paid', 'payed': 'Paid',
-        'unpaid': 'Unpaid',
-        'pending': 'Pending',
-    }
+    'paid': 'Paid', 'p a i d': 'Paid', 'payed': 'Paid', 'unpaid': 'Unpaid', 'due': 'Unpaid', 'overdue': 'Unpaid', 'pending': 'Pending',
+    }   
     df['fee_status'] = df['fee_status'].str.strip().str.lower().map(fee_map)
 
     # Drop rows missing critical fields
     df.dropna(subset=['student_id', 'full_name'], inplace=True)
     df.reset_index(drop=True, inplace=True)
 
-    print(f"Clean rows ready to load: {len(df)}")
+    clean_count = len(df)
+    total = 500  # your original row count
+    quality_score = round((clean_count / total) * 100, 1)
+
+    print(f"""
+    ========================================
+         DATA QUALITY REPORT
+    ========================================
+    Total Rows Extracted     :  {total}
+    Clean Rows Loaded        :  {clean_count}
+    Rows Removed/Fixed       :  {total - clean_count}
+    Data Quality Score       :  {quality_score}%
+    Nulls in Email           :  {df['email'].isnull().sum()}
+    Nulls in Phone           :  {df['phone_number'].isnull().sum()}
+    Nulls in CGPA            :  {df['cgpa'].isnull().sum()}
+    Nulls in Attendance      :  {df['attendance_percentage'].isnull().sum()}
+    ========================================
+    """)
     return df
 
 # LOAD into MySQL
 def load(df):
+    try:
 
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS students (
-        id                    INT AUTO_INCREMENT PRIMARY KEY,
-        student_id            VARCHAR(20) UNIQUE NOT NULL,
-        full_name             VARCHAR(100),
-        email                 VARCHAR(100),
-        phone_number          VARCHAR(15),
-        gender                ENUM('Male', 'Female'),
-        age                   INT,
-        department            VARCHAR(50),
-        city                  VARCHAR(50),
-        admission_year        INT,
-        cgpa                  DECIMAL(4,2),
-        attendance_percentage DECIMAL(5,2),
-        fee_status            ENUM('Paid', 'Unpaid', 'Pending'),
-        loaded_at             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-    """
+        create_table_sql = """
+        CREATE TABLE IF NOT EXISTS students (
+            id                    INT AUTO_INCREMENT PRIMARY KEY,
+            student_id            VARCHAR(20) UNIQUE NOT NULL,
+            full_name             VARCHAR(100),
+            email                 VARCHAR(100),
+            phone_number          VARCHAR(15),
+            gender                ENUM('Male', 'Female'),
+            age                   INT,
+            department            VARCHAR(50),
+            city                  VARCHAR(50),
+            admission_year        INT,
+            cgpa                  DECIMAL(4,2),
+            attendance_percentage DECIMAL(5,2),
+            fee_status            ENUM('Paid', 'Unpaid', 'Pending'),
+            loaded_at             TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        );
+        """
 
-    with engine.connect() as conn:
-        conn.execute(text(create_table_sql))
-        conn.commit()
+        with engine.connect() as conn:
+            conn.execute(text(create_table_sql))  
+            conn.execute(text("DELETE FROM students"))
+            conn.commit()
 
-    df.to_sql(
-        name='students',
-        con=engine,
-        if_exists='append',
-        index=False,
-        method='multi'
-    )
+        df.to_sql(
+            name='students',
+            con=engine,
+            if_exists='append',
+            index=False,
+            method='multi'
+        )
 
-    print("Data loaded into MySQL successfully!")
+        print("Data loaded into MySQL successfully!")
+    except Exception as e:
+        print(f"❌ Database Error: {e}")
+        print("Check: Is MySQL running? Is your password correct?")
+
 
 # SQL REPORTS
 def run_reports():
