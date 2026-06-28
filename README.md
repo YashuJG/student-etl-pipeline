@@ -16,7 +16,7 @@ This project solves that problem by building an **automated ETL pipeline** that:
 - Generates automated SQL reports answering real business questions
 - Visualizes insights in an Excel analytics dashboard
 
-> Without this pipeline: wrong data → wrong reports → wrong decisions.
+> Without this pipeline: wrong data → wrong reports → wrong decisions.  
 > With this pipeline: clean data → accurate reports → reliable insights.
 
 ---
@@ -79,16 +79,13 @@ Nulls in Attendance      :  54
 
 ## 📈 Excel Analytics Dashboard
 
-> **Add your dashboard screenshot here:**
-> Replace this line by dragging your dashboard screenshot into GitHub when editing this README.
-> Or use this syntax: `![Dashboard](dashboard_screenshot.png)`
-> (Upload your screenshot to the same GitHub folder and name it dashboard_screenshot.png)
+![Student Data Quality & Analytics Dashboard](dashboard_screenshot.png)
 
 ### Dashboard Includes:
-- **Students Per Department** — Bar chart showing enrollment by department
+- **Students Per Department** — Bar chart showing enrollment by department (EEE highest: 75)
 - **Fee Status Distribution** — Pie chart (Paid 44%, Pending 32%, Unpaid 24%)
-- **Average CGPA by Department** — Bar chart showing academic performance
-- **KPI Summary Box** — Total Students: 480 | Data Quality Score: 96% | Unpaid Fee Count: 107 | At-Risk Students: 20
+- **Average CGPA by Department** — Bar chart (CSE highest: 7.93)
+- **KPI Summary Box** — Total Students: 480 | Data Quality Score: 96% | Unpaid Fee Count: 107
 
 ---
 
@@ -126,11 +123,12 @@ Nulls in Attendance      :  54
 ```
 student_etl/
 │
-├── et1_pipeline.py          ← Full ETL pipeline (Extract + Clean + Load + Report)
-├── students.xlsx            ← Raw input (500 rows, intentionally dirty)
-├── student_analysis_dashboard.xlsx  ← Excel dashboard with charts
-├── requirements.txt         ← All Python dependencies
-└── README.md                ← This file
+├── et1_pipeline.py                      ← Full ETL pipeline
+├── students.xlsx                        ← Raw input (500 rows, intentionally dirty)
+├── student_analysis_dashboard.xlsx      ← Excel dashboard with charts
+├── dashboard_screenshot.png             ← Dashboard preview image
+├── requirements.txt                     ← All Python dependencies
+└── README.md                            ← This file
 ```
 
 ---
@@ -217,5 +215,5 @@ The pipeline automatically runs 8 business reports after loading:
 
 ## 👩‍💻 Author
 
-**Yasaswini**
+**Yasaswini**  
 Aspiring Data Engineer — learning by building real pipelines that solve real problems.
